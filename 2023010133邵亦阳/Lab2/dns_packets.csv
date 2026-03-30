@@ -1,0 +1,3 @@
+No.,Time,Source,Destination,Protocol,Length,Info
+6519,1132.462119,10.251.167.252,10.251.167.145,DNS,73,Standard query 0xf6ab A www.baidu.com
+6522,1132.486536,10.251.167.145,10.251.167.252,DNS,132,Standard query response 0xf6ab A www.baidu.com CNAME www.a.shifen.com A 183.2.172.17 A 183.2.172.177

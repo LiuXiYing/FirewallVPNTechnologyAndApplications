@@ -1,0 +1,3 @@
+"No.","Time","Source","Destination","Protocol","Length","Info"
+"8849","5.313653","172.19.21.108","202.203.85.89","DNS","74","Standard query 0x6f77 A www.douban.com"
+"8857","5.326240","202.203.85.88","172.19.21.108","DNS","161","Standard query response 0x6f77 A www.douban.com CNAME forward.douban.com CNAME tc.forward.douban.com A 120.53.130.158 A 81.70.124.99 A 140.143.177.206"
