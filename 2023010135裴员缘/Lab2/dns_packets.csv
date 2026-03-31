@@ -1,0 +1,3 @@
+"No.","Time","Source","Destination","Protocol","Length","Info"
+"75","4.307223","192.168.125.28","192.168.125.42","DNS","75","Standard query 0x82e0 A www.tencent.com"
+"76","4.388983","192.168.125.42","192.168.125.28","DNS","146","Standard query response 0x82e0 A www.tencent.com CNAME www.tencent.com.eo.dnse5.com A 103.220.64.100 A 182.247.248.128"

@@ -1,0 +1,3 @@
+"No.","Time","Source","Destination","Protocol","Length","Info"
+"10","3.497581","172.19.36.18","202.203.85.88","DNS","75","Standard query 0x0b0b A www.yxnu.edu.cn"
+"12","3.542774","202.203.85.88","172.19.36.18","DNS","91","Standard query response 0x0b0b A www.yxnu.edu.cn A 202.203.86.93"

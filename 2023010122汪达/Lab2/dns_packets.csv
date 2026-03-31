@@ -1,0 +1,3 @@
+"No.","Time","Source","Destination","Protocol","Length","Info"
+"69","1.200918","172.19.66.132","202.203.85.88","DNS","85","Standard query 0x6f4c A www.baidu.com"
+"83","1.244829","202.203.85.88","172.19.66.132","DNS","149","Standard query response 0x6f4c A www.baidu.com CNAME www.a.shifen.com A 183.2.172.17 A 183.2.172.177"

@@ -1,0 +1,3 @@
+"No.","Time","Source","Destination","Protocol","Length","Info"
+"2061","9.202592","192.168.50.100","192.168.50.1","DNS","72","Standard query 0xbc67 A www.bing.com"
+"2117","9.245442","192.168.50.1","192.168.50.100","DNS","184","Standard query response 0xbc67 A www.bing.com CNAME www-www.bing.com.trafficmanager.net CNAME china.bing123.com A 202.89.233.101 A 202.89.233.100"
