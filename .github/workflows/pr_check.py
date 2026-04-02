@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
-PR 自动审核脚本 v2
-全部使用 GitHub API，避免 git 命令在 Actions 环境中的各种问题。
+PR 自动审核脚本 v3（含调试输出）
 """
 
 import os
@@ -46,24 +45,29 @@ def gh_put(path, body):
 def gh_patch(path, body):
     requests.patch(f"{API}{path}", headers=GH, json=body)
 
-def get_file_content(file_path: str) -> str | None:
+def get_file_content(file_path: str):
     try:
         data = gh_get(f"/repos/{REPO}/contents/{requests.utils.quote(file_path, safe='/')}",
                       params={"ref": HEAD_SHA})
         if data.get("encoding") == "base64":
             return base64.b64decode(data["content"]).decode("utf-8", errors="replace")
-    except Exception:
+    except Exception as e:
+        print(f"  [debug] get_file_content({file_path}) 失败: {e}")
         return None
 
 def list_dir(dir_path: str) -> list:
     try:
         tree = gh_get(f"/repos/{REPO}/git/trees/{HEAD_SHA}", params={"recursive": "1"})
+        all_nodes = tree.get("tree", [])
         prefix = dir_path.rstrip("/") + "/"
-        return [
-            item["path"] for item in tree.get("tree", [])
+        result = [
+            item["path"] for item in all_nodes
             if item["type"] == "blob" and item["path"].startswith(prefix)
         ]
-    except Exception:
+        print(f"  [debug] list_dir({dir_path}): tree总节点={len(all_nodes)}, prefix={prefix}, 匹配={len(result)}, 列表={result}")
+        return result
+    except Exception as e:
+        print(f"  [debug] list_dir({dir_path}) 异常: {e}")
         return []
 
 # ── 评论 / 拒绝 / 合并 ────────────────────────────────────
@@ -162,6 +166,7 @@ def check_files(student_id_name: str, lab: str, changed_files: list):
 def check_homework_files(changed_files: list, lab: str):
     hw_dir = f"homework/{lab}"
     hw_files_full = list_dir(hw_dir)
+    print(f"  [debug] hw_dir={hw_dir}, 找到文件数={len(hw_files_full)}")
     if not hw_files_full:
         print(f"  [跳过] {hw_dir} 目录不存在或为空，跳过文件名检查")
         return
@@ -313,6 +318,7 @@ def check_deadline(lab: str):
 
 def main():
     print(f"[PR #{PR_NUMBER}] 开始审核：{PR_TITLE}")
+    print(f"  [debug] REPO={REPO}, HEAD_SHA={HEAD_SHA}")
 
     student_id_name, lab = check_title()
     print(f"  ✓ 标题格式正确：{student_id_name} / {lab}")
@@ -320,7 +326,7 @@ def main():
     changed_files = get_changed_files()
     if not changed_files:
         reject("**PR 没有任何文件变更**，请确认是否提交了作业文件。")
-    print(f"  ✓ 获取到变更文件，共 {len(changed_files)} 个")
+    print(f"  ✓ 获取到变更文件，共 {len(changed_files)} 个：{changed_files}")
 
     check_files(student_id_name, lab, changed_files)
     print(f"  ✓ 文件路径规范正确")
