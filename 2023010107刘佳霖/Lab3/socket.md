@@ -146,7 +146,7 @@ client.close()
 | `socket()` 的第二个参数 |socket.SOCK_STREAM |
 | 连接服务器的方法名 |connect |
 | 发送数据的方法名 |send |
-| 接收数据的方法名（含参数） |recv |
+| 接收数据的方法名（含参数） |recv（1024） |
 | 断开连接的方法名 |close |
 
 **嵌入截图：**
