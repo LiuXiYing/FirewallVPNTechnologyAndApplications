@@ -189,14 +189,12 @@ def reject(reason: str):
 
 
 def merge_pr():
-    return gh_put(
-        f"/repos/{REPO}/pulls/{PR_NUMBER}/merge",
-        {
-            "merge_method": "merge",
-            "commit_title": f"[自动合并] {PR_TITLE}",
-        },
-    )
-
+    r = requests.put(f"{API}/repos/{REPO}/pulls/{PR_NUMBER}/merge", headers=GH, json={
+        "merge_method": "merge",
+        "commit_title": f"[自动合并] {PR_TITLE}",
+    })
+    print(f"  [debug] merge status={r.status_code}, body={r.text}")
+    return r.status_code == 200
 
 def close_pr():
     gh_patch(f"/repos/{REPO}/pulls/{PR_NUMBER}", {"state": "closed"})
