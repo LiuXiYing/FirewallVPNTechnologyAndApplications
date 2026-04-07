@@ -13,6 +13,10 @@ permissions:
 jobs:
   review:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: write
+      actions: read
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: 检出代码
