@@ -1,0 +1,48 @@
+#include <stdio.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
+
+#pragma comment(lib, "ws2_32.lib")
+
+int main()
+{
+    WSADATA wsaData;
+    struct addrinfo* result = NULL;
+    struct addrinfo hints;
+    int iResult;
+
+    // 初始化Winsock
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
+    {
+        printf("WSAStartup初始化失败\n");
+        return 1;
+    }
+
+    // 设置hints结构体
+    ZeroMemory(&hints, sizeof(hints));
+    hints.ai_family = AF_INET;      // 只获取IPv4地址
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
+
+    // 查询域名
+    iResult = getaddrinfo("www.yxnu.edu.cn", NULL, &hints, &result);
+    if (iResult != 0)
+    {
+        printf("查询失败，错误代码: %d\n", WSAGetLastError());
+        WSACleanup();
+        return 1;
+    }
+
+    // 输出IP地址
+    struct sockaddr_in* sockaddr_ipv4 = (struct sockaddr_in*)result->ai_addr;
+    char ipstr[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &(sockaddr_ipv4->sin_addr), ipstr, INET_ADDRSTRLEN);
+    printf("IP: %s\n", ipstr);
+
+    // 释放资源
+    freeaddrinfo(result);
+
+    // 清理Winsock
+    WSACleanup();
+    return 0;
+}
