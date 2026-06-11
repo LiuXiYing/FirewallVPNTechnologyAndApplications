@@ -852,4 +852,4 @@ sudo ip netns exec vpn wg-quick down /etc/wireguard/vpn/wg0.conf
 
 ## 截止时间
 
-2026-06-11，届时关于 `Lab11` 的 PR 将不会被合并。
+###### 2026-06-11，届时关于 `Lab11` 的 PR 将不会被合并。
