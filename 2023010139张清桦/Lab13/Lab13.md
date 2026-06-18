@@ -861,7 +861,7 @@ sudo ip netns list
 答：underlay 抓包看不到 10 段内网地址，说明 VPN  隐藏了内网私网 IP、业务端口、HTTP/ICMP 应用明文、内网拓扑信息；同时仍会暴露两端网关底层公网地址、  WireGuard 固定 UDP 51820 端口、加密包长度和流量时间特征。 
 
 8. 如果要允许 `siteB` 主动访问 `siteA` 的某个服务，需要增加哪些规则？
-答：允许 siteB 主动访问 siteA 指定服务，需要在 gwA 的 FORWARD 链新增放行源 10.2.0.0/24、目标 siteA 服务端口的新建 TCP 流量规则，在 gwB 的 FORWARD 链新增放行 wg0 入、LAN 出、10.2 网段访问对应服务端口的新建流量规则，保留原有 RELATED、ESTABLISHED 规则保障回程通信，也可按需添加 LOG 规则记录访问日志。
+答：允许 siteB 主动访问 siteA 指定服务，需要在 gwA 的 FORWARD 链新增放行源 10.2.0.0/24、目标 siteA 服务端口的新建 TCP 流量规则，在 gwB 的 FORWARD 链新增放行 wg0 入、LAN 出、10.2 网段访问对应服务端口的新建流量规则，保留原有 RELATED、ESTABLISHED 规则保障回程通信，也可按需添加 LOG 规则记录访问日志 。
 
 ---
 
