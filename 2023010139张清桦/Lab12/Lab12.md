@@ -926,7 +926,7 @@ sudo ip netns exec client curl --max-time 3 http://10.20.0.2:2222/
 
 截图：
 
-![tcpdump_compare](tcpdump_compare.png)
+![tcpdump_compare](tcpdump_compare.jpg)
 
 ---
 
