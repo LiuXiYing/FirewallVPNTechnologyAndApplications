@@ -771,7 +771,7 @@ sudo ip netns exec siteA curl --max-time 3 http://10.2.0.2:8080/
 
 截图：
 
-![tcpdump_compare](tcpdump_compare.jpg)
+![tcpdump_compare](tcpdump_compare.png)
 
 ---
 
