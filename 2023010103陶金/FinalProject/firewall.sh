@@ -48,18 +48,22 @@ sudo ip netns exec $FW iptables -A FORWARD \
 # GUEST区域策略
 # =========================
 echo "[7] guest -> office拒绝 + LOG..."
-sudo ip netns exec $FW iptables -A FORWARD \
+sudo ip netns exec fw iptables -A FORWARD \
   -s 10.30.0.0/24 -d 10.20.0.0/24 \
-  -j LOG --log-prefix "GUEST-TO-OFFICE: "
+  -m limit --limit 5/min --limit-burst 10 \
+  -j LOG --log-prefix "GUEST-TO-OFFICE: " \
+  --log-level 4 # 第四部分补充：日志限制
 
 sudo ip netns exec $FW iptables -A FORWARD \
   -s 10.30.0.0/24 -d 10.20.0.0/24 \
   -j REJECT
 
 echo "[8] guest -> dmz拒绝 + LOG..."
-sudo ip netns exec $FW iptables -A FORWARD \
+sudo ip netns exec fw iptables -A FORWARD \
   -s 10.30.0.0/24 -d 10.40.0.0/24 \
-  -j LOG --log-prefix "GUEST-TO-DMZ: "
+  -m limit --limit 5/min --limit-burst 10 \
+  -j LOG --log-prefix "GUEST-TO-DMZ: " \
+  --log-level 4 # 第四部分补充：日志限制
 
 sudo ip netns exec $FW iptables -A FORWARD \
   -s 10.30.0.0/24 -d 10.40.0.0/24 \
@@ -90,6 +94,12 @@ sudo ip netns exec $FW iptables -A FORWARD \
 # INTERNET -> 内网隔离
 # =========================
 echo "[12] internet -> office拒绝..."
+sudo ip netns exec fw iptables -A FORWARD \
+  -i veth-fw-inet -d 10.20.0.0/24 \
+  -m limit --limit 5/min --limit-burst 10  \
+  -j LOG --log-prefix "INET-TO-OFFICE: " \
+  --log-level 4 # 第四部分补充：日志限制
+
 sudo ip netns exec $FW iptables -A FORWARD \
   -i veth-fw-inet -d 10.20.0.0/24 \
   -j REJECT
@@ -112,54 +122,55 @@ sudo ip netns exec $FW iptables -t nat -A POSTROUTING \
 sudo ip netns exec $FW iptables -t nat -A POSTROUTING \
   -s 10.40.0.0/24 -o veth-fw-inet -j MASQUERADE
 
-echo "[15] DNAT（外网访问DMZ:8080）..."
-sudo ip netns exec $FW iptables -t nat -A PREROUTING \
-  -i veth-fw-inet -p tcp --dport 8080 \
-  -j DNAT --to-destination 10.40.0.2:8080
+echo "[15] DNAT（外网访问DMZ:8080）...（第六部分修改版）"
+sudo ip netns exec $FW iptables -A FORWARD \
+  -i veth-fw-inet -o veth-fw-dmz \
+  -p tcp --dport 8080 -d 10.40.0.2 \
+  -m conntrack --ctstate NEW \
+  -m recent --rcheck --seconds 60 --hitcount 10 --name DMZ8080 \
+  -j REJECT --reject-with tcp-reset
 
 sudo ip netns exec $FW iptables -A FORWARD \
   -i veth-fw-inet -o veth-fw-dmz \
-  -p tcp --dport 8080 \
-  -d 10.40.0.2 \
-  -m conntrack --ctstate NEW,ESTABLISHED,RELATED \
+  -p tcp --dport 8080 -d 10.40.0.2 \
+  -m conntrack --ctstate NEW \
+  -m recent --set --name DMZ8080 \
   -j ACCEPT
 
 # =========================
-# VPN区域策略（新增）
+# VPN区域策略（第三部分）
 # =========================
-echo "[16] VPN -> office允许..."
+echo "[16] VPN -> office"
 sudo ip netns exec $FW iptables -A FORWARD \
   -i wg0 -o veth-fw-office \
-  -s 10.10.10.2 -d 10.20.0.0/24 \
+  -s 10.10.10.0/24 -d 10.20.0.0/24 \
   -m conntrack --ctstate NEW,ESTABLISHED,RELATED \
   -j ACCEPT
 
-echo "[17] VPN -> dmz:8080允许..."
+echo "[17] VPN -> dmz 8080"
 sudo ip netns exec $FW iptables -A FORWARD \
   -i wg0 -o veth-fw-dmz \
-  -s 10.10.10.2 -d 10.40.0.2 \
-  -p tcp --dport 8080 \
-  -m conntrack --ctstate NEW \
+  -d 10.40.0.2 -p tcp --dport 8080 \
+  -m conntrack --ctstate NEW,ESTABLISHED,RELATED \
   -j ACCEPT
 
-echo "[18] VPN -> dmz:22拒绝 + LOG..."
+echo "[18] VPN -> dmz ssh reject"
 sudo ip netns exec $FW iptables -A FORWARD \
   -i wg0 -o veth-fw-dmz \
-  -s 10.10.10.2 -d 10.40.0.2 \
-  -p tcp --dport 22 \
+  -d 10.40.0.2 -p tcp --dport 22 \
   -j LOG --log-prefix "VPN-TO-DMZ-SSH: "
 
 sudo ip netns exec $FW iptables -A FORWARD \
   -i wg0 -o veth-fw-dmz \
-  -s 10.10.10.2 -d 10.40.0.2 \
-  -p tcp --dport 22 \
+  -d 10.40.0.2 -p tcp --dport 22 \
   -j REJECT
 
-echo "[19] 其他VPN流量拒绝 + LOG..."
+echo "[19] VPN其余拒绝"
 sudo ip netns exec $FW iptables -A FORWARD \
   -i wg0 \
   -m limit --limit 5/min --limit-burst 10 \
-  -j LOG --log-prefix "VPN-DENY: "
+  -j LOG --log-prefix "VPN-DENY: "\
+  --log-level 4 # 第四部分补充：日志限制
 
 sudo ip netns exec $FW iptables -A FORWARD \
   -i wg0 \
